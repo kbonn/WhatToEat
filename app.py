@@ -2,33 +2,17 @@ from dotenv import load_dotenv
 load_dotenv() # Load variables from .env file into environment
 
 from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-
-from flask_migrate import Migrate # Import Migrate
 from config import Config # Import your Config class
+from extensions import db, migrate # Import extensions
+from models import Restaurant # Import Restaurant model
 
 # Create the Flask app instance
 app = Flask(__name__, instance_relative_config=True) # instance_relative_config=True helps find config in instance folder if needed
 app.config.from_object(Config) # Load configuration from Config object
 
 # Initialize extensions
-db = SQLAlchemy(app)
-migrate = Migrate(app, db) # Initialize Migrate
-
-# --- Define Database Models (AFTER db is initialized) ---
-class Restaurant(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(200), nullable=False)
-    cuisine_type = db.Column(db.String(100))
-    address = db.Column(db.String(500))
-    phone = db.Column(db.String(20))
-    rating = db.Column(db.Float)
-    price_range = db.Column(db.String(10))  # e.g., "$", "$$", "$$$"
-    is_open = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-
-    def __repr__(self):
-        return f'<Restaurant {self.name}>'
+db.init_app(app)
+migrate.init_app(app, db)
 
 # --- Routes ---
 @app.route('/')
